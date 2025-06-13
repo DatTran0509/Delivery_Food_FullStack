@@ -1,0 +1,120 @@
+/* Popup container */
+.login-popup {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.56); /* Tối màu nền */
+    display: grid;
+    justify-items: center; /* Để popup nằm ở giữa */
+    align-items: center; /* Đảm bảo popup căn giữa */
+}
+
+/* Login Popup Form */
+.login-popup-container {
+    width: max(23vw, 400px);
+    color: #808080;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 25px 30px;
+    border-radius: 20px;
+    font-size: 14px;
+    animation: fadeIn 0.5s;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15); /* Thêm bóng đổ */
+}
+
+/* Title in Popup */
+.login-popup-title {
+    display: flex;
+    justify-content: space-between;  /* Để các phần tử được phân chia đều trong container */
+    align-items: center;  /* Căn giữa theo chiều dọc */
+    color: black;
+}
+
+.login-popup-title h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    flex-grow: 1; /* Đảm bảo tiêu đề chiếm hết không gian còn lại để căn giữa */
+    margin-right: 10px; /* Khoảng cách giữa tiêu đề và icon đóng */
+}
+
+/* Close icon */
+.login-popup-title img {
+    width: 16px;
+    cursor: pointer;
+}
+
+/* Form Inputs */
+.login-popup-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.login-popup-inputs input {
+    padding: 10px;
+    border: 1px solid #808080;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.login-popup-inputs input:focus {
+    border-color: tomato; /* Thêm hiệu ứng khi focus vào input */
+}
+
+/* Button */
+.login-popup-container button {
+    background-color: tomato;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.3s; /* Hiệu ứng hover */
+}
+
+.login-popup-container button:hover {
+    background-color: #e2a297;
+    transform: scale(1.05);
+}
+
+/* Terms & Conditions Section */
+.login-popup-condition {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #808080;
+}
+
+.login-popup-condition input {
+    margin-top: 0; /* Đặt margin cho checkbox */
+    padding-left: 5px;
+    transform: scale(1.2); /* Tăng kích thước checkbox một chút */
+}
+
+/* Footer text (Sign Up / Login here) */
+.login-popup p {
+    text-align: center; /* Căn giữa */
+}
+
+.login-popup p span {
+    color: tomato;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: underline;
+}
+.login-popup-title img{
+    width: 20px; /* Kích thước của icon đóng */
+    cursor: pointer;
+}
+/* Adjustments for mobile view */
+@media (max-width: 768px) {
+    .login-popup-container {
+        width: 90%; /* Thêm độ rộng phù hợp với màn hình nhỏ */
+    }
+}
