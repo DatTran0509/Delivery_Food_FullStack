@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 export const StoreContext = createContext(null)
 const StoreContextProvider = (props) => {
     const [cartItems, setCartItems] = useState({});
-    const url = "https://food-del-backend-5zjh.onrender.com";
+    const url = "https://food-del-backend-h4k8.onrender.com"; // Replace with your backend URL
     const [token, setToken] = useState("");
     const [food_list, setFoodList] = useState([]);
     
