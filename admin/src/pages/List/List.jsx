@@ -4,6 +4,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useEffect } from 'react'
+
 const List = ({url}) => {
     const [list, setList] = useState([])
     const fetchList = async () => {
