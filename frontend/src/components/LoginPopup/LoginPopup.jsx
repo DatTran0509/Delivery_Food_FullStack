@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { assets } from '../../assets/assets';
 import { StoreContext } from '../../context/StoreContext';
 import axios from 'axios';
-import toast from 'react-toastify';
+import {toast} from 'react-toastify';
 const LoginPopup = ({setShowLogin}) => {
     const [currState, setCurrState] = useState('Login');
     const {url, setToken} = useContext(StoreContext);
