@@ -32,16 +32,16 @@ const LoginPopup = ({setShowLogin}) => {
         newUrl += '/api/user/register';
       }
 
-      const response = await axios.post(newUrl,   );
+      const response = await axios.post(newUrl, data);
       if(response.data.success) {
         setToken(response.data.token);
         localStorage.setItem('token', response.data.token);
         setShowLogin(false);
         toast.success(response.data.message);
-        console.log(response.data.message);
+        console.log("Login successful:", response.data.message);
       } else {
         toast.error(response.data.message);
-        console.error(response.data.message);
+        console.error("Login error:", response.data.message);
       }
       
     }
