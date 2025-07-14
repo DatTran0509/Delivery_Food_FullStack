@@ -54,6 +54,7 @@ const placeOrder = async (req, res) => {
             success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
             cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
         });
+        // console.log("Stripe session created:", session);
         res.json({success: true, message: "Order placed successfully", session_url: session.url});
 
     } catch (error) {

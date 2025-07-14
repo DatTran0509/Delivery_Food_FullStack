@@ -17,7 +17,7 @@ const Verify = () => {
             navigate("/myorders");
         }
         else{
-            navigate("/")
+            navigate("/my-appointments")
         }
     }
     useEffect(() => {
