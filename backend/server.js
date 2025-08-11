@@ -30,8 +30,8 @@ app.get("/", (req, res) => {
     res.send("API is running");
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on port http://localhost:${port}`);
-})
+// app.listen(port, () => console.log(`Server is running on port http://localhost:${port}`));
 
+// Export app để Vercel dùng
+export default app;
 //mongodb+srv://greatstack:050904@cluster0.c5gmgp2.mongodb.net/?
