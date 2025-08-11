@@ -8,21 +8,22 @@ import 'dotenv/config';
 import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
 
-
 //app config
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 4000; // Sửa: Dùng PORT từ environment
 
 //middleware
 app.use(express.json());
 app.use(cors());
+
 //db connection
 connectDB();
 
 // api endpoints
-app.use("/api/food",  foodRouter)
-app.use("/images", express.static("uploads"));
-app.use("/api/user", userRouter)
+app.use("/api/food", foodRouter);
+// Bỏ dòng này vì dùng Cloudinary
+// app.use("/images", express.static("uploads"));
+app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
@@ -30,8 +31,10 @@ app.get("/", (req, res) => {
     res.send("API is running");
 });
 
-// app.listen(port, () => console.log(`Server is running on port http://localhost:${port}`));
+// Chỉ listen khi chạy local, không phải trên Vercel
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => console.log(`Server is running on port http://localhost:${port}`));
+}
 
 // Export app để Vercel dùng
 export default app;
-//mongodb+srv://greatstack:050904@cluster0.c5gmgp2.mongodb.net/?

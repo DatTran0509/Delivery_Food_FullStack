@@ -1,18 +1,27 @@
 import express from 'express';
-import { addFood, listFood, removeFood} from '../controllers/foodController.js';
+import { addFood, listFood, removeFood } from '../controllers/foodController.js';
 import multer from 'multer';
 
 const foodRouter = express.Router();
-//Image storage engine
-const storage = multer.diskStorage({
-    destination:"uploads",
-    filename: (req, file, cb) => {
-        return cb(null, `${Date.now()}${file.originalname}`);
+
+// Sử dụng memoryStorage cho Cloudinary
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed!'), false);
+        }
     }
 });
 
-const upload = multer({ storage: storage });
-foodRouter.post("/add",upload.single("image"), addFood);
+foodRouter.post("/add", upload.single("image"), addFood);
 foodRouter.get("/list", listFood);
 foodRouter.post("/remove", removeFood);
+
 export default foodRouter;
