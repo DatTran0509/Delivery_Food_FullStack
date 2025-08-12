@@ -8,39 +8,38 @@ const addFood = async (req, res) => {
             return res.json({ success: false, message: "No image file provided" });
         }
 
-        // Upload image to Cloudinary
-        const result = await cloudinary.uploader.upload_stream(
+        // Upload image to Cloudinary với Promise thay vì callback
+        const uploadStream = cloudinary.uploader.upload_stream(
             {
                 resource_type: "image",
-                folder: "food_delivery", // Tạo folder trên Cloudinary
-            },
-            async (error, result) => {
-                if (error) {
-                    console.log("Cloudinary upload error:", error);
-                    return res.json({ success: false, message: "Image upload failed" });
-                }
+                folder: "food_delivery",
+            }
+        );
 
-                // Tạo food item với URL từ Cloudinary
+        uploadStream.on('result', async (result) => {
+            try {
                 const food = new foodModel({
                     name: req.body.name,
                     description: req.body.description,
                     price: req.body.price,
                     category: req.body.category,
-                    image: result.secure_url // Lưu URL từ Cloudinary
+                    image: result.secure_url
                 });
 
-                try {
-                    await food.save();
-                    res.json({ success: true, message: "Food Added" });
-                } catch (error) {
-                    console.log(error);
-                    res.json({ success: false, message: "Error saving food" });
-                }
+                await food.save();
+                res.json({ success: true, message: "Food Added" });
+            } catch (error) {
+                console.log(error);
+                res.json({ success: false, message: "Error saving food" });
             }
-        );
+        });
 
-        // Pipe buffer data to Cloudinary
-        result.end(req.file.buffer);
+        uploadStream.on('error', (error) => {
+            console.log("Cloudinary upload error:", error);
+            res.json({ success: false, message: "Image upload failed" });
+        });
+
+        uploadStream.end(req.file.buffer);
 
     } catch (error) {
         console.log(error);
@@ -65,9 +64,16 @@ const removeFood = async (req, res) => {
         const food = await foodModel.findById(req.body.id);
         
         if (food && food.image) {
-            // Extract public_id from Cloudinary URL để xóa ảnh
-            const publicId = food.image.split('/').pop().split('.')[0];
-            await cloudinary.uploader.destroy(`food_delivery/${publicId}`);
+            // Extract public_id from Cloudinary URL
+            const urlParts = food.image.split('/');
+            const publicIdWithExtension = urlParts[urlParts.length - 1];
+            const publicId = `food_delivery/${publicIdWithExtension.split('.')[0]}`;
+            
+            try {
+                await cloudinary.uploader.destroy(publicId);
+            } catch (cloudinaryError) {
+                console.log("Error deleting from Cloudinary:", cloudinaryError);
+            }
         }
 
         await foodModel.findByIdAndDelete(req.body.id);
