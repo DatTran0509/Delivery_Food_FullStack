@@ -20,7 +20,7 @@ const Verify = () => {
             navigate("/myorders");
         }
         else{
-            navigate("/")
+            navigate("/cart")
         }
     }
     useEffect(() => {
