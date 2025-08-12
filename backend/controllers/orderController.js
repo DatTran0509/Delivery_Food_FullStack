@@ -25,7 +25,9 @@ const placeOrder = async (req, res) => {
             address: req.body.address
         });
         await newOrder.save();
-        await userModel.findByIdAndUpdate(req.body.userId, {cartData: {}});
+        
+        // ❌ BỎ DÒNG NÀY - Không xóa cart ngay lập tức
+        // await userModel.findByIdAndUpdate(req.body.userId, {cartData: {}});
 
         const line_items = req.body.items.map((item) => ({
             price_data: {
@@ -66,11 +68,19 @@ const placeOrder = async (req, res) => {
 const verifyOrder = async (req, res) => {
     const { orderId, success } = req.body;
     try {
-        if(success==="true") {
-            await orderModel.findByIdAndUpdate(orderId, {payment: true });
+        if(success === "true") {
+            // ✅ CHỈ XÓA CART KHI THANH TOÁN THÀNH CÔNG
+            const order = await orderModel.findByIdAndUpdate(orderId, {payment: true});
+            
+            if (order) {
+                // Xóa cart của user sau khi thanh toán thành công
+                await userModel.findByIdAndUpdate(order.userId, {cartData: {}});
+            }
+            
             res.json({ success: true, message: "Paid" });
         }
         else{
+            // ❌ THANH TOÁN THẤT BẠI - Xóa order nhưng GIỮ NGUYÊN cart
             await orderModel.findByIdAndDelete(orderId);
             res.json({ success: false, message: "Not Paid" });
         }
