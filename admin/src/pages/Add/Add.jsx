@@ -20,9 +20,9 @@ const Add = ({url}) => {
     setData(data => ({ ...data, [name]: value }));
   };
 
-  // ✅ NEW: handle image file upload & type check
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    
     if (!file) return;
 
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/gif'];
@@ -38,21 +38,36 @@ const Add = ({url}) => {
   const onSubmitHandler = async (event) => {
     event.preventDefault();
 
+    // Validate image
     if (!image) {
       toast.error("Please upload an image before submitting.");
       return;
     }
 
+    // Validate other fields
+    if (!data.name.trim() || !data.description.trim() || !data.price || !data.category) {
+      toast.error("Please fill all required fields.");
+      return;
+    }
+
+    // Create FormData
     const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('description', data.description);
+    formData.append('name', data.name.trim());
+    formData.append('description', data.description.trim());
     formData.append('price', Number(data.price));
     formData.append('category', data.category);
     formData.append('image', image);
 
     try {
-      const response = await axios.post(`${url}/api/food/add`, formData);
+      const response = await axios.post(`${url}/api/food/add`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 30000
+      });
+      
       if (response.data.success) {
+        // Reset form
         setData({
           name: '',
           description: '',
@@ -60,12 +75,19 @@ const Add = ({url}) => {
           category: 'Salad',
         });
         setImage(false);
-        toast.success(response.data.message);
+        
+        toast.success(response.data.message || "Food added successfully!");
       } else {
-        toast.error(response.data.message);
+        toast.error(response.data.message || "Failed to add food");
       }
     } catch (error) {
-      toast.error("Server error. Please try again.");
+      if (error.response) {
+        toast.error(`Server error: ${error.response.data?.message || error.response.status}`);
+      } else if (error.request) {
+        toast.error("Cannot connect to server. Please check if backend is running.");
+      } else {
+        toast.error(`Request error: ${error.message}`);
+      }
     }
   };
 
@@ -77,17 +99,37 @@ const Add = ({url}) => {
           <label htmlFor="image">
             <img src={image ? URL.createObjectURL(image) : assets.upload_area} alt="" />
           </label>
-          <input onChange={handleImageChange} type="file" id='image' hidden />
+          <input 
+            onChange={handleImageChange} 
+            type="file" 
+            id='image' 
+            accept="image/*"
+            hidden 
+          />
         </div>
 
         <div className="add-product-name flex-col">
           <p>Product Name</p>
-          <input onChange={onChangeHandler} value={data.name} type="text" name='name' placeholder='Enter product name' required />
+          <input 
+            onChange={onChangeHandler} 
+            value={data.name} 
+            type="text" 
+            name='name' 
+            placeholder='Enter product name' 
+            required 
+          />
         </div>
 
         <div className="add-product-description flex-col">
           <p>Product Description</p>
-          <textarea onChange={onChangeHandler} value={data.description} name="description" rows="6" placeholder='Write content description' required></textarea>
+          <textarea 
+            onChange={onChangeHandler} 
+            value={data.description} 
+            name="description" 
+            rows="6" 
+            placeholder='Write content description' 
+            required
+          />
         </div>
 
         <div className="add-category-price">
@@ -106,7 +148,16 @@ const Add = ({url}) => {
           </div>
           <div className="add-price flex-col">
             <p>Product Price</p>
-            <input onChange={onChangeHandler} value={data.price} type="number" name='price' placeholder='Enter product price' required />
+            <input 
+              onChange={onChangeHandler} 
+              value={data.price} 
+              type="number" 
+              name='price' 
+              placeholder='Enter product price' 
+              step="0.01"
+              min="0"
+              required 
+            />
           </div>
         </div>
 

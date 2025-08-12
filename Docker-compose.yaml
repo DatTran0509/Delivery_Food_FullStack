@@ -19,5 +19,5 @@ services:
   admin:
     build: ./admin
     ports:
-      - "8387:81"
+      - "8387:80"
     restart: always

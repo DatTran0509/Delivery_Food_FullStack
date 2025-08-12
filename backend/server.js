@@ -32,9 +32,9 @@ app.get("/", (req, res) => {
 });
 
 // Chỉ listen khi chạy local, không phải trên Vercel
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(port, () => console.log(`Server is running on port http://localhost:${port}`));
-}
+
+app.listen(port, () => console.log(`Server is running on port http://localhost:${port}`));
+
 
 // Export app để Vercel dùng
-export default app;
+// export default app;

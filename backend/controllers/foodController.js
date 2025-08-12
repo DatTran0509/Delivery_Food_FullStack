@@ -1,49 +1,97 @@
 import foodModel from "../models/foodModel.js";
 import cloudinary from "../config/cloudinary.js";
 
-// add food item
 const addFood = async (req, res) => {
+    
     try {
         if (!req.file) {
+            console.log("❌ No file provided");
             return res.json({ success: false, message: "No image file provided" });
         }
 
-        // Upload image to Cloudinary với Promise thay vì callback
-        const uploadStream = cloudinary.uploader.upload_stream(
-            {
-                resource_type: "image",
-                folder: "food_delivery",
-            }
-        );
+        if (!req.file.buffer) {
+            console.log("❌ No file buffer");
+            return res.json({ success: false, message: "Invalid file data" });
+        }
+        
+        // Test Cloudinary connection first
+        try {
+            await cloudinary.api.ping();
+        } catch (pingError) {
+            console.log("❌ Cloudinary connection failed:", pingError);
+            return res.json({ success: false, message: "Cloud service unavailable" });
+        }
 
-        uploadStream.on('result', async (result) => {
-            try {
-                const food = new foodModel({
-                    name: req.body.name,
-                    description: req.body.description,
-                    price: req.body.price,
-                    category: req.body.category,
-                    image: result.secure_url
-                });
+        // Upload to Cloudinary
+        const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: "image",
+                    folder: "food_delivery",
+                    transformation: [
+                        { width: 500, height: 500, crop: "limit" },
+                        { quality: "auto" }
+                    ]
+                },
+                (error, result) => {
+                    if (error) {
+                        console.log("❌ Cloudinary upload error:", error);
+                        reject(error);
+                    } else {
 
-                await food.save();
-                res.json({ success: true, message: "Food Added" });
-            } catch (error) {
-                console.log(error);
-                res.json({ success: false, message: "Error saving food" });
-            }
+                        console.log("  - URL:", result.secure_url);
+                        console.log("  - Public ID:", result.public_id);
+                        resolve(result);
+                    }
+                }
+            );
+            
+            uploadStream.end(req.file.buffer);
         });
 
-        uploadStream.on('error', (error) => {
-            console.log("Cloudinary upload error:", error);
-            res.json({ success: false, message: "Image upload failed" });
+        // Validate required fields
+        const { name, description, price, category } = req.body;
+        if (!name || !description || !price || !category) {
+            console.log("❌ Missing required fields");
+            return res.json({ success: false, message: "Missing required fields" });
+        }
+
+        // Create food item
+        const food = new foodModel({
+            name: name.trim(),
+            description: description.trim(),
+            price: Number(price),
+            category: category.trim(),
+            image: uploadResult.secure_url
         });
 
-        uploadStream.end(req.file.buffer);
+        console.log("🔧 Saving to database:", {
+            name: food.name,
+            price: food.price,
+            category: food.category,
+            image: food.image
+        });
+
+        await food.save();
+        console.log("✅ Food save successfully");
+        
+        res.json({ 
+            success: true, 
+            message: "Food Added Successfully",
+            data: {
+                id: food._id,
+                name: food.name,
+                image: food.image
+            }
+        });
 
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error" });
+        console.log("❌ Error in addFood:", error);
+        res.json({ 
+            success: false, 
+            message: `Error: ${error.message}`,
+            details: error.stack
+        });
     }
 };
 
@@ -54,7 +102,7 @@ const listFood = async (req, res) => {
         res.json({ success: true, data: foods });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" });
+        res.json({ success: false, message: "Error fetching food list" });
     }
 };
 
@@ -71,8 +119,9 @@ const removeFood = async (req, res) => {
             
             try {
                 await cloudinary.uploader.destroy(publicId);
+                console.log("✅ Image deleted from Cloudinary");
             } catch (cloudinaryError) {
-                console.log("Error deleting from Cloudinary:", cloudinaryError);
+                console.log("❌ Error deleting from Cloudinary:", cloudinaryError);
             }
         }
 
@@ -80,7 +129,7 @@ const removeFood = async (req, res) => {
         res.json({ success: true, message: "Food Removed" });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" });
+        res.json({ success: false, message: "Error removing food" });
     }
 };
 
